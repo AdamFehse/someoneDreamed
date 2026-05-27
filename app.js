@@ -390,6 +390,7 @@ function render() {
 
     const sx = ((p.x % (W + 200)) + (W + 200)) % (W + 200) - 100;
     const sy = ((p.y % (H + 200)) + (H + 200)) % (H + 200) - 100;
+    if (!isFinite(sx) || !isFinite(sy)) { continue; }
     const depthA = Math.max(0.02, (800-p.z)/800*0.2);
     const sz = Math.max(0.5, p.size*(800/p.z)*0.7);
     const d2m = dist(sx,sy,mx,my);
@@ -425,6 +426,7 @@ function render() {
 
     const sx = ((p.x % (W + 200)) + (W + 200)) % (W + 200) - 100;
     const sy = ((p.y % (H + 200)) + (H + 200)) % (H + 200) - 100;
+    if (!isFinite(sx) || !isFinite(sy)) { p.life += p.speed; continue; }
     const sz = Math.max(1, p.r*(600/p.z)*0.6 + Math.sin(p.life+p.phase)*1.5);
     const d2m = dist(sx,sy,mx,my);
     const react = d2m<250 ? (250-d2m)/250 : 0;
@@ -525,13 +527,15 @@ function render() {
   ctx.globalAlpha = 1;
 
   // ── Cursor glow ──
-  const cg = ctx.createRadialGradient(mx,my,0,mx,my,220);
-  cg.addColorStop(0, pci(4));
-  cg.addColorStop(0.3, pci(3));
-  cg.addColorStop(1, 'transparent');
-  ctx.globalAlpha = 0.05;
-  ctx.fillStyle = cg;
-  ctx.beginPath(); ctx.arc(mx,my,220,0,Math.PI*2); ctx.fill();
+  if (isFinite(mx) && isFinite(my)) {
+    const cg = ctx.createRadialGradient(mx,my,0,mx,my,220);
+    cg.addColorStop(0, pci(4));
+    cg.addColorStop(0.3, pci(3));
+    cg.addColorStop(1, 'transparent');
+    ctx.globalAlpha = 0.05;
+    ctx.fillStyle = cg;
+    ctx.beginPath(); ctx.arc(mx,my,220,0,Math.PI*2); ctx.fill();
+  }
 
   // ── Vignette ──
   const vig = ctx.createRadialGradient(W/2,H/2,H*0.25, W/2,H/2,H*0.95);
