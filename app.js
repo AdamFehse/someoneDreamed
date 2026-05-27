@@ -179,6 +179,7 @@ function initAudio() {
   if (audioStarted) return;
   audioStarted = true;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
 
   // Master gain
   const master = audioCtx.createGain();
@@ -226,7 +227,7 @@ function initAudio() {
     gain.connect(reverb);
 
     osc.start();
-    drones.push({ osc, gain, filter, baseFreq, vol: 0.15 + Math.random()*0.1 });
+    drones.push({ osc, gain, filter, freq, vol: 0.15 + Math.random()*0.1 });
   });
 
   // LFO for filter sweep
@@ -383,11 +384,12 @@ function render() {
     const sx = ((p.x%(W+200))+(W+200))%(W+200)-100;
     const sy = ((p.y%(H+200))+(H+200))%(H+200)-100;
     const depthA = Math.max(0.02, (800-p.z)/800*0.2);
-    const sz = p.size*(800/p.z)*0.7;
+    const sz = Math.max(0.5, p.size*(800/p.z)*0.7);
     const d2m = dist(sx,sy,mx,my);
     const glow = d2m<180 ? (180-d2m)/180 : 0;
 
-    const g = ctx.createRadialGradient(sx,sy,0,sx,sy,sz*3);
+    const glowR = Math.max(1, sz*3);
+    const g = ctx.createRadialGradient(sx,sy,0,sx,sy,glowR);
     g.addColorStop(0, pci(5)); g.addColorStop(1, 'transparent');
     ctx.globalAlpha = depthA + glow*0.25;
     ctx.fillStyle = g;
@@ -411,19 +413,21 @@ function render() {
 
     const sx = ((p.x%(W+200))+(W+200))%(W+200)-100;
     const sy = ((p.y%(H+200))+(H+200))%(H+200)-100;
-    const sz = p.r*(600/p.z)*0.6 + Math.sin(p.life+p.phase)*1.5;
+    const sz = Math.max(1, p.r*(600/p.z)*0.6 + Math.sin(p.life+p.phase)*1.5);
     const d2m = dist(sx,sy,mx,my);
     const react = d2m<250 ? (250-d2m)/250 : 0;
 
     // Outer glow
-    const g = ctx.createRadialGradient(sx,sy,0,sx,sy,sz*5);
+    const outerR = Math.max(1, sz*5);
+    const g = ctx.createRadialGradient(sx,sy,0,sx,sy,outerR);
     g.addColorStop(0, pci(4)); g.addColorStop(0.5, pci(3)); g.addColorStop(1, 'transparent');
     ctx.globalAlpha = 0.04 + react*0.08;
     ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(sx,sy,sz*5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sx,sy,outerR,0,Math.PI*2); ctx.fill();
 
     // Core
-    const g2 = ctx.createRadialGradient(sx,sy,0,sx,sy,sz*1.5);
+    const coreR = Math.max(1, sz*1.5);
+    const g2 = ctx.createRadialGradient(sx,sy,0,sx,sy,coreR);
     g2.addColorStop(0, pci(6)); g2.addColorStop(1, 'transparent');
     ctx.globalAlpha = 0.08 + react*0.15;
     ctx.fillStyle = g2;
