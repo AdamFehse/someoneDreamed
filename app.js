@@ -377,12 +377,19 @@ function render() {
       p.vx += Math.cos(a)*0.005; p.vy += Math.sin(a)*0.005;
     }
     p.vx *= 0.99; p.vy *= 0.99;
-    p.x = ((p.x+100)%(W+200))-100;
-    p.y = ((p.y+100)%(H+200))-100;
+    p.x += p.vx; p.y += p.vy;
+    // Safe wrap
+    p.x = ((p.x + 100) % (W + 200) + (W + 200)) % (W + 200) - 100;
+    p.y = ((p.y + 100) % (H + 200) + (H + 200)) % (H + 200) - 100;
+    // Guard against NaN from accumulated math
+    if (!isFinite(p.x)) p.x = Math.random() * W;
+    if (!isFinite(p.y)) p.y = Math.random() * H;
+    if (!isFinite(p.vx)) p.vx = 0;
+    if (!isFinite(p.vy)) p.vy = 0;
     p.life += p.speed;
 
-    const sx = ((p.x%(W+200))+(W+200))%(W+200)-100;
-    const sy = ((p.y%(H+200))+(H+200))%(H+200)-100;
+    const sx = ((p.x % (W + 200)) + (W + 200)) % (W + 200) - 100;
+    const sy = ((p.y % (H + 200)) + (H + 200)) % (H + 200) - 100;
     const depthA = Math.max(0.02, (800-p.z)/800*0.2);
     const sz = Math.max(0.5, p.size*(800/p.z)*0.7);
     const d2m = dist(sx,sy,mx,my);
@@ -407,12 +414,17 @@ function render() {
     p.x += (pmx-W/2)*0.00001*parallax + p.vx;
     p.y += (pmy-H/2)*0.00001*parallax + p.vy;
     p.vx *= 0.995; p.vy *= 0.995;
-    p.x = ((p.x+100)%(W+200))-100;
-    p.y = ((p.y+100)%(H+200))-100;
+    // Safe wrap
+    p.x = ((p.x + 100) % (W + 200) + (W + 200)) % (W + 200) - 100;
+    p.y = ((p.y + 100) % (H + 200) + (H + 200)) % (H + 200) - 100;
+    if (!isFinite(p.x)) p.x = Math.random() * W;
+    if (!isFinite(p.y)) p.y = Math.random() * H;
+    if (!isFinite(p.vx)) p.vx = 0;
+    if (!isFinite(p.vy)) p.vy = 0;
     p.life += p.speed;
 
-    const sx = ((p.x%(W+200))+(W+200))%(W+200)-100;
-    const sy = ((p.y%(H+200))+(H+200))%(H+200)-100;
+    const sx = ((p.x % (W + 200)) + (W + 200)) % (W + 200) - 100;
+    const sy = ((p.y % (H + 200)) + (H + 200)) % (H + 200) - 100;
     const sz = Math.max(1, p.r*(600/p.z)*0.6 + Math.sin(p.life+p.phase)*1.5);
     const d2m = dist(sx,sy,mx,my);
     const react = d2m<250 ? (250-d2m)/250 : 0;
@@ -447,8 +459,12 @@ function render() {
       s.vx += Math.cos(a)*0.02; s.vy += Math.sin(a)*0.02;
     }
     s.vx *= 0.98; s.vy *= 0.98;
-    s.x = ((s.x+100)%(W+200))-100;
-    s.y = ((s.y+100)%(H+200))-100;
+    s.x = ((s.x + 100) % (W + 200) + (W + 200)) % (W + 200) - 100;
+    s.y = ((s.y + 100) % (H + 200) + (H + 200)) % (H + 200) - 100;
+    if (!isFinite(s.x)) s.x = Math.random() * W;
+    if (!isFinite(s.y)) s.y = Math.random() * H;
+    if (!isFinite(s.vx)) s.vx = 0;
+    if (!isFinite(s.vy)) s.vy = 0;
     s.life += 0.03;
 
     if (s.trail.length > 2) {
