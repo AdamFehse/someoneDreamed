@@ -433,7 +433,13 @@ function render() {
 
     // Outer glow
     const outerR = Math.max(1, Math.min(500, sz*5));
-    const g = ctx.createRadialGradient(sx,sy,0,sx,sy,outerR);
+    let g;
+    try {
+      g = ctx.createRadialGradient(sx,sy,0,sx,sy,outerR);
+    } catch(e) {
+      console.error('GRADIENT FAIL orb:', {sx, sy, outerR, sz, pz: p.z, px: p.x, py: p.y, W, H});
+      continue;
+    }
     g.addColorStop(0, pci(4)); g.addColorStop(0.5, pci(3)); g.addColorStop(1, 'transparent');
     ctx.globalAlpha = 0.04 + react*0.08;
     ctx.fillStyle = g;
