@@ -392,11 +392,11 @@ function render() {
     const sy = ((p.y % (H + 200)) + (H + 200)) % (H + 200) - 100;
     if (!isFinite(sx) || !isFinite(sy)) { continue; }
     const depthA = Math.max(0.02, (800-p.z)/800*0.2);
-    const sz = Math.max(0.5, p.size*(800/p.z)*0.7);
+    const sz = Math.max(0.5, Math.min(20, p.size*(800/p.z)*0.7));
     const d2m = dist(sx,sy,mx,my);
     const glow = d2m<180 ? (180-d2m)/180 : 0;
 
-    const glowR = Math.max(1, sz*3);
+    const glowR = Math.max(1, Math.min(100, sz*3));
     const g = ctx.createRadialGradient(sx,sy,0,sx,sy,glowR);
     g.addColorStop(0, pci(5)); g.addColorStop(1, 'transparent');
     ctx.globalAlpha = depthA + glow*0.25;
@@ -427,12 +427,12 @@ function render() {
     const sx = ((p.x % (W + 200)) + (W + 200)) % (W + 200) - 100;
     const sy = ((p.y % (H + 200)) + (H + 200)) % (H + 200) - 100;
     if (!isFinite(sx) || !isFinite(sy)) { p.life += p.speed; continue; }
-    const sz = Math.max(1, p.r*(600/p.z)*0.6 + Math.sin(p.life+p.phase)*1.5);
+    const sz = Math.max(1, Math.min(50, p.r*(600/p.z)*0.6 + Math.sin(p.life+p.phase)*1.5));
     const d2m = dist(sx,sy,mx,my);
     const react = d2m<250 ? (250-d2m)/250 : 0;
 
     // Outer glow
-    const outerR = Math.max(1, sz*5);
+    const outerR = Math.max(1, Math.min(500, sz*5));
     const g = ctx.createRadialGradient(sx,sy,0,sx,sy,outerR);
     g.addColorStop(0, pci(4)); g.addColorStop(0.5, pci(3)); g.addColorStop(1, 'transparent');
     ctx.globalAlpha = 0.04 + react*0.08;
@@ -440,7 +440,7 @@ function render() {
     ctx.beginPath(); ctx.arc(sx,sy,outerR,0,Math.PI*2); ctx.fill();
 
     // Core
-    const coreR = Math.max(1, sz*1.5);
+    const coreR = Math.max(1, Math.min(100, sz*1.5));
     const g2 = ctx.createRadialGradient(sx,sy,0,sx,sy,coreR);
     g2.addColorStop(0, pci(6)); g2.addColorStop(1, 'transparent');
     ctx.globalAlpha = 0.08 + react*0.15;
