@@ -120,6 +120,7 @@ for (let i = 0; i < N_ORBS; i++) orbs.push({
   r: 3+Math.random()*6,
   phase: Math.random()*Math.PI*2,
   speed: Math.random()*0.008+0.002,
+  life: Math.random()*Math.PI*2,
   hueOffset: Math.random(),
 });
 
@@ -381,22 +382,16 @@ function render() {
     // Safe wrap
     p.x = ((p.x + 100) % (W + 200) + (W + 200)) % (W + 200) - 100;
     p.y = ((p.y + 100) % (H + 200) + (H + 200)) % (H + 200) - 100;
-    // Guard against NaN from accumulated math
-    if (!isFinite(p.x)) p.x = Math.random() * W;
-    if (!isFinite(p.y)) p.y = Math.random() * H;
-    if (!isFinite(p.vx)) p.vx = 0;
-    if (!isFinite(p.vy)) p.vy = 0;
     p.life += p.speed;
 
     const sx = ((p.x % (W + 200)) + (W + 200)) % (W + 200) - 100;
     const sy = ((p.y % (H + 200)) + (H + 200)) % (H + 200) - 100;
-    if (!isFinite(sx) || !isFinite(sy)) { continue; }
     const depthA = Math.max(0.02, (800-p.z)/800*0.2);
-    const sz = Math.max(0.5, Math.min(20, p.size*(800/p.z)*0.7));
+    const sz = Math.max(0.5, p.size*(800/p.z)*0.7);
     const d2m = dist(sx,sy,mx,my);
     const glow = d2m<180 ? (180-d2m)/180 : 0;
 
-    const glowR = Math.max(1, Math.min(100, sz*3));
+    const glowR = Math.max(1, sz*3);
     const g = ctx.createRadialGradient(sx,sy,0,sx,sy,glowR);
     g.addColorStop(0, pci(5)); g.addColorStop(1, 'transparent');
     ctx.globalAlpha = depthA + glow*0.25;
@@ -418,35 +413,24 @@ function render() {
     // Safe wrap
     p.x = ((p.x + 100) % (W + 200) + (W + 200)) % (W + 200) - 100;
     p.y = ((p.y + 100) % (H + 200) + (H + 200)) % (H + 200) - 100;
-    if (!isFinite(p.x)) p.x = Math.random() * W;
-    if (!isFinite(p.y)) p.y = Math.random() * H;
-    if (!isFinite(p.vx)) p.vx = 0;
-    if (!isFinite(p.vy)) p.vy = 0;
     p.life += p.speed;
 
     const sx = ((p.x % (W + 200)) + (W + 200)) % (W + 200) - 100;
     const sy = ((p.y % (H + 200)) + (H + 200)) % (H + 200) - 100;
-    if (!isFinite(sx) || !isFinite(sy)) { p.life += p.speed; continue; }
-    const sz = Math.max(1, Math.min(50, p.r*(600/p.z)*0.6 + Math.sin(p.life+p.phase)*1.5));
+    const sz = Math.max(1, p.r*(600/p.z)*0.6 + Math.sin(p.life+p.phase)*1.5);
     const d2m = dist(sx,sy,mx,my);
     const react = d2m<250 ? (250-d2m)/250 : 0;
 
     // Outer glow
-    const outerR = Math.max(1, Math.min(500, sz*5));
-    let g;
-    try {
-      g = ctx.createRadialGradient(sx,sy,0,sx,sy,outerR);
-    } catch(e) {
-      console.error('GRADIENT FAIL orb:', {sx, sy, outerR, sz, pz: p.z, px: p.x, py: p.y, W, H});
-      continue;
-    }
+    const outerR = Math.max(1, sz*5);
+    const g = ctx.createRadialGradient(sx,sy,0,sx,sy,outerR);
     g.addColorStop(0, pci(4)); g.addColorStop(0.5, pci(3)); g.addColorStop(1, 'transparent');
     ctx.globalAlpha = 0.04 + react*0.08;
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(sx,sy,outerR,0,Math.PI*2); ctx.fill();
 
     // Core
-    const coreR = Math.max(1, Math.min(100, sz*1.5));
+    const coreR = Math.max(1, sz*1.5);
     const g2 = ctx.createRadialGradient(sx,sy,0,sx,sy,coreR);
     g2.addColorStop(0, pci(6)); g2.addColorStop(1, 'transparent');
     ctx.globalAlpha = 0.08 + react*0.15;
@@ -469,10 +453,6 @@ function render() {
     s.vx *= 0.98; s.vy *= 0.98;
     s.x = ((s.x + 100) % (W + 200) + (W + 200)) % (W + 200) - 100;
     s.y = ((s.y + 100) % (H + 200) + (H + 200)) % (H + 200) - 100;
-    if (!isFinite(s.x)) s.x = Math.random() * W;
-    if (!isFinite(s.y)) s.y = Math.random() * H;
-    if (!isFinite(s.vx)) s.vx = 0;
-    if (!isFinite(s.vy)) s.vy = 0;
     s.life += 0.03;
 
     if (s.trail.length > 2) {
@@ -533,15 +513,13 @@ function render() {
   ctx.globalAlpha = 1;
 
   // ── Cursor glow ──
-  if (isFinite(mx) && isFinite(my)) {
-    const cg = ctx.createRadialGradient(mx,my,0,mx,my,220);
-    cg.addColorStop(0, pci(4));
-    cg.addColorStop(0.3, pci(3));
-    cg.addColorStop(1, 'transparent');
-    ctx.globalAlpha = 0.05;
-    ctx.fillStyle = cg;
-    ctx.beginPath(); ctx.arc(mx,my,220,0,Math.PI*2); ctx.fill();
-  }
+  const cg = ctx.createRadialGradient(mx,my,0,mx,my,220);
+  cg.addColorStop(0, pci(4));
+  cg.addColorStop(0.3, pci(3));
+  cg.addColorStop(1, 'transparent');
+  ctx.globalAlpha = 0.05;
+  ctx.fillStyle = cg;
+  ctx.beginPath(); ctx.arc(mx,my,220,0,Math.PI*2); ctx.fill();
 
   // ── Vignette ──
   const vig = ctx.createRadialGradient(W/2,H/2,H*0.25, W/2,H/2,H*0.95);
